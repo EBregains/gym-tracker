@@ -3,8 +3,10 @@
 import useModal from "@/hooks/useModal";
 import useLocalStorage from "@/hooks/useLocalStorage"
 import Modal from "@/ui/Modal";
+import { onAddEntry } from "@/actions/data";
 import { ChevronLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, MutableRefObject, SetStateAction, Suspense, useEffect, useRef } from "react";
+import ExerciseSelector from "@/ui/exercise-selector";
 
 enum STATUS {
   IDLE,
@@ -100,7 +102,7 @@ export default function Page(){
 
   return (
     <>
-        <form action="onAddEntry" className="grid h-auto grid-cols-subgrid col-span-4 gap-y-4 place-content-between">  
+        <form action={onAddEntry} className="grid h-auto grid-cols-subgrid col-span-4 gap-y-4 place-content-between">  
             
             <div className="grid h-auto grid-cols-subgrid col-span-4 gap-y-6 place-content-start">
               <div className="flex flex-col justify-between col-span-4 w-full h-[48px]">
@@ -115,7 +117,7 @@ export default function Page(){
                     className="w-full border-b-2 border-background-300 font-medium text-xl uppercase"
                     type="text" 
                     name="selectedExercise"
-                    id="exercise" 
+                    id="selectedExercise" 
                     value={formData.selectedExercise} 
                     placeholder="Select an Exercise..."
                     readOnly
@@ -124,7 +126,9 @@ export default function Page(){
               </div>
 
               <Modal ref={ref} title="Select Exercise" onClose={onClose}>
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Distinctio repellat magnam mollitia perferendis possimus dolorem cupiditate iste et suscipit, necessitatibus maxime modi labore, excepturi neque minus nemo, odit amet sint.
+                <Suspense key='exerciseSelector'>
+                  <ExerciseSelector/>
+                </Suspense>
               </Modal>
 
             <div className="flex flex-col justify-between col-span-2 h-[48px] ">
@@ -180,14 +184,20 @@ export default function Page(){
           </div>
           <div className="grid grid-cols-subgrid col-span-4 gap-y-6 h-auto">
             <div className="col-span-2 flex flex-col items-center bg-background-200 p-4">
-              <p className="uppercase text-lg font-medium">Training</p>
+              <label htmlFor="trainingTime" className="uppercase text-lg font-medium">
+                TRAINING
+              </label>
+              <input type="hidden" value={elapsedTraining.toFixed(0)} name="trainingTime" id="trainingTime"/>
               <p>sec</p>
-              <p className="font-medium text-3xl">{elapsedTraining.toFixed(0) && elapsedTraining.toFixed(0)}</p>
+              <p className="font-medium text-3xl"> {elapsedResting.toFixed(0)}</p>
             </div>
             <div className="col-span-2 flex flex-col items-center bg-background-300 p-4">
-              <p className="uppercase text-lg font-medium">Resting</p>
+            <label htmlFor="restingTime" className="uppercase text-lg font-medium">
+                RESTING
+              </label>
+              <input type="hidden" value={elapsedResting.toFixed(0)} name="restingTime" id="restingTime"/>
               <p>sec</p>
-              <p className="font-medium text-3xl">{elapsedResting.toFixed(0) && elapsedResting.toFixed(0)}</p>
+              <p className="font-medium text-3xl"> {elapsedResting.toFixed(0)}</p>
             </div>
 
           <div className="flex justify-between col-span-4 gap-4">
@@ -223,7 +233,7 @@ export default function Page(){
               }
               {currentStatus === STATUS['FINISHED'] &&
                 <button 
-                type="button"
+                type="submit"
                 className="self-center text-background-100 text-base text-normal"
               >
                 SUBMIT

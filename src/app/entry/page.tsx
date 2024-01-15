@@ -54,6 +54,7 @@ export default function Page(){
     if (currentStatus === STATUS['FINISHED']) {
       stopTimer();
     }
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStatus])
 
   function startTimer(timer: Dispatch<SetStateAction<number>>) {

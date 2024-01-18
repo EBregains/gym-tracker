@@ -1,3 +1,5 @@
+'use server'
+
 import { supabase } from '@/db/supabase';
 import { log } from 'console';
 import { revalidatePath } from 'next/cache';
@@ -6,9 +8,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
 
 const EntrySchema = z.object({
-  id: z.number(),
+  id: z.number().gt(0, { message: 'Please select an exercies'}),
   date: z.coerce.date(),
-  exercise: z.coerce.number({ invalid_type_error: 'Invalid exercise', required_error: 'Exercise must be selected' }),
+  exercise: z.coerce.number().gt(0, { message: 'Exercise must be selected' }),
   weight: z.coerce.number().gte(0,{ message: 'Invalid number' }).max(400),
   reps: z.coerce.number().gt(0,{ message: 'Invalid number' }),
   rir: z.coerce.number().gte(0,{ message: 'Invalid number' }),
@@ -36,7 +38,7 @@ export async function onAddEntry(formData: FormData) {
   // Validation
   const validatedFields = AddEntry.safeParse({
     date: formData.get('date'),
-    exercise: formData.get('exercise_id'),
+    exercise: formData.get('exerciseId'),
     weight: formData.get('weight'),
     reps: formData.get('reps'),
     rir: formData.get('rir'),

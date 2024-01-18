@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${DMSans.className} antialised text-text-100`}>
-        <main className="flex max-h-[750px] flex-col items-center justify-center bg-background-100">
+        <main className="flex flex-col items-center justify-center bg-background-100">
           <div className='grid grid-cols-4 gap-5 min-w-[325px] h-screen p-[25px] bg-background-100 '>
             {children}
           </div>

@@ -1,14 +1,17 @@
 import { fetchExercises }from "@/db/data"
+import { useEffect } from "react";
+import Search from "@/ui/search";
 
 export default async function ExerciseSelector({ exercises }: any) {
 
-  const exerciseList = await fetchExercises();
-  console.log(exerciseList.error, exerciseList.exercises);
-  
+  // --------------------------------------------------------------------------------------------------
+  // TODO: AGREGAR UN COMPONENTE SEARCH Y UN COMPONENTE TABLE. SEARCH VA EN UI, TABLE VA EN UI/Entries
+  // --------------------------------------------------------------------------------------------------
 
   return (
     <>
-      <h4>Exercise selector</h4>
+      <Search placeholder="Type the exercise you are looking for..."></Search>
+      {/* <Table></Table> */}
     </>
   )
 }

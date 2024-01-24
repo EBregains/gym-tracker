@@ -1,7 +1,18 @@
+'use client'
+
 import { CheckBadgeIcon, CheckIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 
 export default function EntrySuccessPage() {
+
+  localStorage.removeItem('formData');
+  localStorage.removeItem('currentStatus');
+  localStorage.removeItem('startTraining');
+  localStorage.removeItem('finishTraining');
+  localStorage.removeItem('startResting');
+  localStorage.removeItem('finishResting');
+
+
   return (
     <>
     <div

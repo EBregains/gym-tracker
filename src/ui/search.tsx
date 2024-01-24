@@ -12,8 +12,6 @@ export default function Search({placeholder}: {placeholder : string}) {
 
   // It uses debounce to avoid a refresh on each keystroke
   const handleSearch = useDebouncedCallback((term: string) => {
-
-    console.log(term);
     
     const params = new URLSearchParams(searchParams);
     if (term) 

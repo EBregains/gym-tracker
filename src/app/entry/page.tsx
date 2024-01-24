@@ -11,15 +11,9 @@ export default async function AddEntryPage({
   searchParams?: {
     id: number,
     name: string,
-    newEntry: boolean
   }
 }
   ) {
-  
-  let clearStorage = false
-  if (searchParams?.newEntry) {
-    clearStorage = true;
-  }
 
   if (!searchParams?.id || !searchParams?.name) {
     revalidatePath('/selection')
@@ -43,7 +37,6 @@ export default async function AddEntryPage({
           <p className='font-medium text-xl uppercase mb-4'>{name}</p>
           <EntryForm 
             selectedExercise={{id: id, name: name}}
-            clearStorage={clearStorage} 
           />
         </div>
       </div>

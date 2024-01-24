@@ -15,14 +15,9 @@ enum STATUS {
 
 interface Props {
   selectedExercise: {id:number, name:string} | null,
-  clearStorage: boolean;
 }
-export default function EntryForm({ selectedExercise, clearStorage }: Props){
+export default function EntryForm({ selectedExercise }: Props){
   
-  if (clearStorage) {
-    localStorage.clear();
-  }
-
   const [formData, setFormData] = useLocalStorage('formData',{
     weight: '',
     reps: '', 
@@ -33,7 +28,7 @@ export default function EntryForm({ selectedExercise, clearStorage }: Props){
 
   // TODO: Timers for training and resting
   const [currentStatus, setCurrentStatus] = useLocalStorage('currentStatus', STATUS['IDLE']);
-  const [startTraining, setStartTraining ] = useLocalStorage('startTrainig', 0);
+  const [startTraining, setStartTraining ] = useLocalStorage('startTraining', 0);
   const [startResting, setStartResting] = useLocalStorage('startResting', 0);
   
   const [finishTraining, setFinishTraining] = useLocalStorage('finishTraining', 0);

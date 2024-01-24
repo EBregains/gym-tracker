@@ -15,7 +15,7 @@ export default async function Table({
         {exercises?.exercises?.map((exercise) => (
           <Link 
             key={exercise.id}
-            href={`/entry?id=${exercise.id}&name=${exercise.name}`}
+            href={`/entry?id=${exercise.id}&name=${exercise.name}&newEntry="true"`}
             className="w-full block bg-background-200 p-4 uppercase hover:bg-primary-100 hover:text-background-100"
           >
             {exercise.name}

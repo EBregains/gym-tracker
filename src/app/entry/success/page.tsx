@@ -5,12 +5,14 @@ import Link from "next/link"
 
 export default function EntrySuccessPage() {
 
-  localStorage.removeItem('formData');
-  localStorage.removeItem('currentStatus');
-  localStorage.removeItem('startTraining');
-  localStorage.removeItem('finishTraining');
-  localStorage.removeItem('startResting');
-  localStorage.removeItem('finishResting');
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('formData');
+    window.localStorage.removeItem('currentStatus');
+    window.localStorage.removeItem('startTraining');
+    window.localStorage.removeItem('finishTraining');
+    window.localStorage.removeItem('startResting');
+    window.localStorage.removeItem('finishResting');
+  }
 
 
   return (

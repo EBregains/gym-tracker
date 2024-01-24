@@ -11,7 +11,7 @@ const EntrySchema = z.object({
   id: z.number().gt(0, { message: 'Please select an exercies'}),
   date: z.coerce.date(),
   exercise: z.coerce.number().gt(0, { message: 'Exercise must be selected' }),
-  weight: z.coerce.number().gte(0,{ message: 'Invalid number' }).max(400),
+  weight: z.coerce.number().gt(0,{ message: 'Invalid number' }).max(400),
   reps: z.coerce.number().gt(0,{ message: 'Invalid number' }),
   rir: z.coerce.number().gte(0,{ message: 'Invalid number' }),
   trainingTime: z.coerce.number().gt(0,{ message: 'Invalid number' }),
@@ -58,34 +58,34 @@ export async function onAddEntry(formData: FormData) {
   
   // Preparing data for Insertion
   const { exercise, weight, reps, rir, trainingTime, restingTime } = validatedFields.data;
-  const date = Date.now()
-
-  console.log(exercise, weight, reps, rir, trainingTime, restingTime);
+  const date = new Date().toISOString()
+  const id = Math.floor(Math.random() * 99999999999)
+  console.log(id, date, exercise, weight, reps, rir, trainingTime, restingTime);
   
-  // try {
-  //   const { data, error } = await supabase
-  //   .from('entries')
-  //   .insert([
-  //     { 
-  //       id: uuidv4(),
-  //       date: date,
-  //       exercise_id: exercise,
-  //       weight: weight,
-  //       reps: reps,
-  //       rir: rir,
-  //       training_time: trainingTime,
-  //       resting_time: restingTime,
-  //     }
-  //   ])
-  //   .select()
+  try {
+    const data = await supabase
+    .from('entries')
+    .insert([
+      { 
+        id: id,
+        date: date,
+        exercise_id: exercise,
+        weight: weight,
+        reps: reps,
+        rir: rir,
+        training_time: trainingTime,
+        resting_time: restingTime,
+      }
+    ])
+    .select('*')    
+    .throwOnError()
 
-  //   console.log(data);
+  } catch (error) {
+    console.log(error);
     
-  // } catch (error) {
-  //   return error
-  // }
-
-  // revalidatePath('/entry')
-  // redirect('/entry')
-
+    return error
+  }
+  
+  revalidatePath(`/entry/success`)
+  redirect('/entry/success')  
 }

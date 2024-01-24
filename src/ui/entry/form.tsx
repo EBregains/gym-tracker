@@ -1,12 +1,10 @@
 'use client'
 
 import useLocalStorage from "@/hooks/useLocalStorage"
-import Modal from "@/ui/Modal";
 import { onAddEntry } from "@/actions/data";
-import { ChevronLeftIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { Dispatch, MutableRefObject, SetStateAction, Suspense, useEffect, useRef } from "react";
-import ExerciseSelector from "@/ui/exercise-selector";
-import useModal from "@/hooks/useModal";
+import { ChevronLeftIcon } from "@heroicons/react/20/solid";
+import React, { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef } from "react";
+import clsx from "clsx";
 
 enum STATUS {
   IDLE,
@@ -16,22 +14,22 @@ enum STATUS {
 }
 
 interface Props {
-  exercises: Array<{id:number, name:string}> | null
+  selectedExercise: {id:number, name:string} | null,
+  clearStorage: boolean;
 }
-export default function EntryForm({ exercises }: Props){
+export default function EntryForm({ selectedExercise, clearStorage }: Props){
   
-  const [formData, setFormData] = useLocalStorage('formData',{ 
+  if (clearStorage) {
+    localStorage.clear();
+  }
+
+  const [formData, setFormData] = useLocalStorage('formData',{
     weight: '',
     reps: '', 
     rir: '', 
     trainingTime: 0, 
     restingTime: 0 
   })
-
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
-  };
 
   // TODO: Timers for training and resting
   const [currentStatus, setCurrentStatus] = useLocalStorage('currentStatus', STATUS['IDLE']);
@@ -88,6 +86,12 @@ export default function EntryForm({ exercises }: Props){
     setFormData((prevFormData: any) => ({ ...prevFormData, trainingTime: elapsedTraining, restingTime: elapsedResting}));
   }
 
+  
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+  };
+
   let elapsedTraining = 0
   if(startTraining !== null && finishTraining !== null) {
     elapsedTraining = (finishTraining - startTraining) / 1000
@@ -100,30 +104,13 @@ export default function EntryForm({ exercises }: Props){
 return (
   <>
   <form action={onAddEntry}>       
-    <div className="w-full pb-6 bg-background-100">
-    <label htmlFor="customer" className="mb-2 block text-sm font-medium ">
-            Choose Exercise
-          </label>
-          <div className="relative">
-            <select
-              id="exercise"
-              name="exerciseId"
-              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-              defaultValue=""
-              aria-describedby='customer-error'
-            >
-              <option value="" disabled>
-                Select a customer
-              </option>
-              {exercises?.map((exercise) => (
-                <option key={exercise.id} value={exercise.id}>
-                  {exercise.name}
-                </option>
-              ))}
-            </select>
-          </div>
-    </div>
-    <div className="flex flex-row w-full h-auto justify-between pb-6 ">
+    <input 
+      type="hidden"
+      name="exerciseId"
+      id="exerciseId"
+      value={selectedExercise?.id}
+    />
+    <div className="flex flex-row w-full h-auto justify-between ">
       <div className="flex flex-col w-1/3">
       <label htmlFor="weight" className="text-text-200">
         Weight
@@ -167,16 +154,16 @@ return (
         />
       </div>
     </div>
-    <div className="flex justify-between items-center p-6">
-      <p>Total Volume</p>
+    <div className="flex justify-end items-center py-6">
+      <p className="w-1/2">Total Volume</p>
       <p><span className="font-medium text-lg">
         {formData.weight && formData.reps ?  Number(formData.weight) * Number(formData.reps) : '-  '}
         </span>
         Kg
       </p>
     </div>
-  <div className="grid grid-cols-subgrid col-span-4 gap-y-6 h-auto">
-  <div className="col-span-2 flex flex-col items-center bg-background-200 p-4">
+    <div className="grid grid-cols-subgrid col-span-4 gap-6 h-auto">
+  <div className={clsx("flex flex-col col-span-2 items-center bg-background-200 p-4", currentStatus == STATUS['TRAINING'] ? "bg-accent-100" : "bg-background-300")}>
     <label htmlFor="trainingTime" className="uppercase text-lg font-medium">
       TRAINING
     </label>
@@ -184,7 +171,7 @@ return (
     <p>sec</p>
     <p className="font-medium text-3xl"> {elapsedTraining.toFixed(0)}</p>
   </div>
-  <div className="col-span-2 flex flex-col items-center bg-background-300 p-4">
+  <div className={clsx("flex flex-col col-span-2 items-center bg-background-200 p-4", currentStatus == STATUS['RESTING'] ? "bg-accent-100" : "bg-background-300")}>
   <label htmlFor="restingTime" className="uppercase text-lg font-medium">
       RESTING
     </label>
@@ -193,11 +180,9 @@ return (
     <p className="font-medium text-3xl"> {elapsedResting.toFixed(0)}</p>
   </div>
 
+  
   <div className="flex justify-between col-span-4 gap-4">
-    <button type="button" className="flex size-16 items-center justify-center border-[1px] border-text-200 self-center text-text-100 text-base text-normal">
-      <ChevronLeftIcon className="size-5"/>
-    </button>
-  <div className='flex grow-[2] h-16  items-center justify-center bg-gradient-to-r from-primary-100 to-accent-100'>
+      <div className='flex grow-[2] h-16  items-center justify-center bg-gradient-to-r from-primary-100 to-accent-100'>
     {currentStatus === STATUS['IDLE'] && 
       <button 
       type="button"
@@ -228,14 +213,14 @@ return (
       <button 
       type="submit"
       className="self-center text-background-100 text-base text-normal"
-      onClick={() => {}}
+      onSubmit={() => {}}
     >
       SUBMIT
     </button>
     }
   </div>
   </div>
-  </div>
+    </div>
   </form>
   </>
   )

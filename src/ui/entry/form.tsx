@@ -3,8 +3,9 @@
 import useLocalStorage from "@/hooks/useLocalStorage"
 import { onAddEntry } from "@/actions/data";
 import { ChevronLeftIcon } from "@heroicons/react/20/solid";
-import React, { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef } from "react";
+import React, { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef, useState } from "react";
 import clsx from "clsx";
+import { ArrowPathIcon, StopIcon } from "@heroicons/react/24/solid";
 
 enum STATUS {
   IDLE,
@@ -16,27 +17,33 @@ enum STATUS {
 interface Props {
   selectedExercise: {id:number, name:string} | null,
 }
+
 export default function EntryForm({ selectedExercise }: Props){
   
-  const [formData, setFormData] = useLocalStorage('formData',{
+  const [formData, setFormData] = useState({
     weight: '',
     reps: '', 
     rir: '', 
-    trainingTime: 0, 
-    restingTime: 0 
   })
 
   // TODO: Timers for training and resting
-  const [currentStatus, setCurrentStatus] = useLocalStorage('currentStatus', STATUS['IDLE']);
+  const [currentStatus, setCurrentStatus] = useState(STATUS['IDLE']);
+
   const [startTraining, setStartTraining ] = useLocalStorage('startTraining', 0);
   const [startResting, setStartResting] = useLocalStorage('startResting', 0);
   
   const [finishTraining, setFinishTraining] = useLocalStorage('finishTraining', 0);
   const [finishResting, setFinishResting] = useLocalStorage('finishResting', 0);
 
-  const intervalRef: MutableRefObject<number | NodeJS.Timeout | undefined> = useRef(0)
+  const TimeStampRef: MutableRefObject<number | NodeJS.Timeout | undefined> = useRef(0)
+  let elapsedTraining = 0
+  let elapsedResting = 0
 
   useEffect (() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    elapsedTraining = (finishTraining - startTraining) / 1000
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    elapsedResting = (finishResting - startResting) / 1000
     if (currentStatus === STATUS['TRAINING']) {
       startTimer(setFinishTraining)
     }
@@ -50,14 +57,14 @@ export default function EntryForm({ selectedExercise }: Props){
   }, [currentStatus])
 
   function startTimer(timer: Dispatch<SetStateAction<number>>) {
-    intervalRef.current = setInterval(() => {
+    TimeStampRef.current = setInterval(() => {
       timer(Date.now())
     }, 1000)  
   }
 
   function stopTimer() {
-    clearInterval(intervalRef.current);
-    intervalRef.current = undefined
+    clearInterval(TimeStampRef.current);
+    TimeStampRef.current = undefined
   }
 
   function train() {
@@ -81,17 +88,18 @@ export default function EntryForm({ selectedExercise }: Props){
     setFormData((prevFormData: any) => ({ ...prevFormData, trainingTime: elapsedTraining, restingTime: elapsedResting}));
   }
 
+  function reset() {
+    setCurrentStatus(STATUS['IDLE'])
+  }
   
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
   };
 
-  let elapsedTraining = 0
   if(startTraining !== null && finishTraining !== null) {
     elapsedTraining = (finishTraining - startTraining) / 1000
   }
-  let elapsedResting = 0
   if(startResting !== null && finishResting !== null) {
     elapsedResting = (finishResting - startResting) / 1000
   }
@@ -157,65 +165,73 @@ return (
         Kg
       </p>
     </div>
-    <div className="grid grid-cols-subgrid col-span-4 gap-6 h-auto">
-  <div className={clsx("flex flex-col col-span-2 items-center bg-background-200 p-4", currentStatus == STATUS['TRAINING'] ? "bg-accent-100" : "bg-background-300")}>
-    <label htmlFor="trainingTime" className="uppercase text-lg font-medium">
-      TRAINING
-    </label>
-    <input type="hidden" value={elapsedTraining.toFixed(0)} name="trainingTime" id="trainingTime"/>
-    <p>sec</p>
-    <p className="font-medium text-3xl"> {elapsedTraining.toFixed(0)}</p>
-  </div>
-  <div className={clsx("flex flex-col col-span-2 items-center bg-background-200 p-4", currentStatus == STATUS['RESTING'] ? "bg-accent-100" : "bg-background-300")}>
-  <label htmlFor="restingTime" className="uppercase text-lg font-medium">
-      RESTING
-    </label>
-    <input type="hidden" value={elapsedResting.toFixed(0)} name="restingTime" id="restingTime"/>
-    <p>sec</p>
-    <p className="font-medium text-3xl"> {elapsedResting.toFixed(0)}</p>
-  </div>
 
-  
-  <div className="flex justify-between col-span-4 gap-4">
-      <div className='flex grow-[2] h-16  items-center justify-center bg-gradient-to-r from-primary-100 to-accent-100'>
-    {currentStatus === STATUS['IDLE'] && 
+  <div className="grid grid-cols-4 col-span-4 gap-4 h-auto">
+    {
+    currentStatus === STATUS['IDLE'] ?
       <button 
-      type="button"
-      className="self-center text-background-100 text-base text-normal"
-      onClick={train}
+        className="flex flex-col col-span-2 items-center justify-center bg-gradient-to-r from-primary-100 to-accent-100 text-background-100 p-4"
+        onClick={train}
+        >
+        TRAIN
+      </button> :
+      <div className="flex flex-col col-span-2 items-center bg-background-200 p-4">
+      <label htmlFor="trainingTime" className="uppercase text-lg font-medium">
+        TRAINING
+      </label>
+      <input type="hidden" value={elapsedTraining.toFixed(0)} name="trainingTime" id="trainingTime"/>
+      <p>sec</p>
+      <p className="font-medium text-3xl"> {elapsedTraining.toFixed(0)}</p>
+      </div>
+    }
+    {
+    currentStatus <= STATUS['TRAINING'] ?
+      <button 
+        className="flex flex-col col-span-2 items-center justify-center bg-gradient-to-r from-primary-100 to-accent-100 text-background-100 p-4"  
+        onClick={rest}
+        disabled={currentStatus !== STATUS['TRAINING']}
       >
-      START
-    </button>}
-    {currentStatus === STATUS['TRAINING'] &&
-      <button 
-      type="button"
-      className="self-center text-background-100 text-base text-normal"
-      onClick={rest}
-    >
-      REST
-    </button>
+        REST
+      </button> 
+      :
+      <div className="flex flex-col col-span-2 items-center bg-background-200 p-4">
+      <label htmlFor="restingTime" className="uppercase text-lg font-medium">
+          RESTING
+        </label>
+        <input type="hidden" value={elapsedResting.toFixed(0)} name="restingTime" id="restingTime"/>
+        <p>sec</p>
+        <p className="font-medium text-3xl"> {elapsedResting.toFixed(0)}</p>
+      </div>
     }
-    {currentStatus === STATUS['RESTING'] &&
+
+    {
+      currentStatus === STATUS['FINISHED'] ?
+      <button
+        type="button"
+        className="col-span-1 p-4 bg-background-100 text-text-100 border-2 border-text-200"
+        onClick={reset}
+      >
+        <ArrowPathIcon></ArrowPathIcon>
+      </button>
+      :
       <button 
-      type="button"
-      className="self-center text-background-100 text-base text-normal"
-      onClick={finish}
-    >
-      FINISH
-    </button>
+        type="button"
+        className="col-span-1 p-4 bg-gradient-to-r from-primary-100 to-accent-100 text-background-100 "
+        onClick={finish}
+        disabled={currentStatus !== STATUS['RESTING']}
+      >
+        <StopIcon></StopIcon>
+      </button>
     }
-    {currentStatus === STATUS['FINISHED'] &&
-      <button 
+    <button 
       type="submit"
-      className="self-center text-background-100 text-base text-normal"
+      className="col-span-3 p-4 bg-gradient-to-r from-primary-100 to-accent-100 text-background-100"
       onSubmit={() => {}}
+      disabled={currentStatus !== STATUS['FINISHED']}
     >
       SUBMIT
     </button>
-    }
   </div>
-  </div>
-    </div>
   </form>
   </>
   )

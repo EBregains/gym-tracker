@@ -25,3 +25,8 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+button:is(:disabled) {
+  background: #ccc;
+  color: #5c5c5c;
+}

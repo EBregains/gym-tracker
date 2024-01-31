@@ -15,6 +15,7 @@ export default async function AddEntryPage({
 }
   ) {
 
+  // If the user gets to this page without having choose an exercise, sends it back to selection
   if (!searchParams?.id || !searchParams?.name) {
     revalidatePath('/selection')
     redirect('/selection')  
